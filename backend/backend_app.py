@@ -85,6 +85,35 @@ def delete_post(post_id):
 
     return jsonify({'error': 'Post not found'}), 404
 
+@app.route('/api/posts/search', methods=['GET'])
+def search_posts():
+    '''Allows the client to search for posts by their title or content.
+
+    Output: A list of posts that match the search criteria.
+    If no posts match the search criteria, the endpoint returns an empty list.'''
+
+    title_query = request.args.get('title', '').lower()
+    content_query = request.args.get('content', '').lower()
+
+    # Filter posts based on search query
+    matching_posts = []
+
+    for post in POSTS:
+        if title_query:  # Only check title if a title query is provided
+            title_match = title_query in post['title'].lower()
+        else:
+            title_match = True  # No title filter applied
+
+        if content_query:  # Only check content if a content query is provided
+            content_match = content_query in post['content'].lower()
+        else:
+            content_match = True  # No content filter applied
+
+        if title_match and content_match:
+            matching_posts.append(post)
+
+    return jsonify(matching_posts), 200
+
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5002, debug=True)
