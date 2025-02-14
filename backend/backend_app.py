@@ -14,7 +14,33 @@ POST_ID = 3 # Simple counter to create unique ID's
 
 @app.route('/api/posts', methods=['GET'])
 def get_posts():
-    return jsonify(POSTS)
+    '''GET request to return list of existing blog articles.
+    Allows sorting by title or content.
+    Sorting direction adjustable.'''
+
+    sort_field = request.args.get('sort')  # Get sort field (title/content)
+    direction = request.args.get('direction', 'asc')  # Default to ascending
+
+    # Validate sort field
+    if sort_field not in {None, "title", "content"}:
+        return jsonify({'error': 'Invalid sort field. Use "title" or "content".'}), 400
+
+    # Validate direction
+    if direction not in {"asc", "desc"}:
+        return jsonify({'error': 'Invalid direction. Use "asc" or "desc".'}), 400
+
+    # If no sorting is requested, return posts as they are
+    if not sort_field:
+        return jsonify(POSTS)
+
+    # Sort the posts based on the field and direction
+    sorted_posts = sorted(
+        POSTS,
+        key=lambda post: post[sort_field].lower(),  # Case-insensitive sorting
+        reverse=(direction == "desc")  # Reverse for descending order
+    )
+
+    return jsonify(sorted_posts)
 
 
 @app.route('/api/posts', methods=['POST'])
